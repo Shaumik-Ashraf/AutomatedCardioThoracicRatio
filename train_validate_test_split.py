@@ -16,11 +16,11 @@ TRAIN_FRACTION = 0.7
 VALIDATE_FRACTION = 0.1
 TEST_FRACTION = 0.2
 
-INPUT_DIR = "./x_rays/preprocessed"
-INPUT_MASKS_DIR = "./masks/preprocessed"
+INPUT_DIR = os.path.join("data", "preprocessed");
+INPUT_MASKS_DIR = os.path.join("data", "masks");
 
-OUTPUT_DIR = "./x_rays"       # will create x_rays/train, x_rays/validate, x_rays/test
-OUTPUT_MASKS_DIR = "./masks"  # will create masks/train, masks/validate, masks/test
+OUTPUT_DIR = os.path.join("data", "split", "preprocessed"); # will create x_rays/train, x_rays/validate, x_rays/test
+OUTPUT_MASKS_DIR = os.path.join("data", "split", "masks");  # will create masks/train, masks/validate, masks/test
 
 imgs = glob.glob(os.path.join(INPUT_DIR, "*"));
 masks = glob.glob(os.path.join(INPUT_MASKS_DIR, "*"));
@@ -33,14 +33,41 @@ train_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "train");
 validate_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "validate");
 test_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "test");
 
-x_dev, y_dev, x_test, y_test = train_test_split(imgs, masks, test_size = TEST_FRACTION);
-x_train, y_train, x_val, y_val = train_test_split(x_dev, y_dev, test_size = (1-TEST_FRACTION)*VALIDATE_FRACTION);
+x_dev, x_test, y_dev, y_test = train_test_split(imgs, masks, test_size=TEST_FRACTION);
+print(imgs[0]);
+print(len(imgs));
+print(masks[0]);
+print(len(masks));
+print(x_dev[0]);
+print(len(x_dev));
+print(y_dev[0]);
+print(len(y_dev));
+print(x_test[0]);
+print(len(x_test));
+print(y_test[0]);
+print(len(y_test));
 
-for set, prefix in [(x_train, train_prefix), 
+x_train, x_val, y_train, y_val = train_test_split(x_dev, y_dev, test_size=(1-TEST_FRACTION)*VALIDATE_FRACTION);
+print(x_train[0]);
+print(len(x_train));
+print(y_train[0]);
+print(len(y_train));
+print(x_val[0]);
+print(len(x_val));
+print(y_val[0]);
+print(len(y_val));
+
+
+# generate dirs if they don't exist
+for dir in [train_prefix, validate_prefix, test_prefix, train_masks_prefix, validate_masks_prefix, test_masks_prefix]:
+    os.makedirs(dir, exist_ok = True);
+
+# move files by split
+for set, prefix in [(x_train, train_prefix),
                     (y_train, train_masks_prefix),
-                    (x_validate, validate_prefix), 
-                    (y_validate, validate_masks_prefix),
-                    (x_test, test_prefix), 
+                    (x_val, validate_prefix),
+                    (y_val, validate_masks_prefix),
+                    (x_test, test_prefix),
                     (y_test, test_masks_prefix)
                    ]:
   for path in set:
