@@ -9,6 +9,7 @@ import random;
 import numpy as np;
 from torch.utils.data import Dataset;
 #from torchvision.io import read_image;
+import torchvision;
 from torchvision.transforms import ToTensor;
 
 class CXRMaskDataset(Dataset):
@@ -18,8 +19,9 @@ class CXRMaskDataset(Dataset):
         validation_set = CXRMaskDataset("data/x_rays/validation", "data/masks/validation");
         test_set = CXRMaskDataset("data/x_rays/test", "data/masks/test");
     """
+    DEFAULT_TRANSFORM = torchvision.transforms.Compose([ToTensor()]);
 
-    def __init__(self, img_dir, masks_dir, transform=ToTensor, target_transform=ToTensor, augmentations=None):
+    def __init__(self, img_dir, masks_dir, transform=DEFAULT_TRANSFORM, target_transform=DEFAULT_TRANSFORM, augmentations=None):
         """
         img_dir : string - path to x-ray folder
         labels_file : string - path to CTR_Logs.txt (img name & 4 points labelled per line)
@@ -54,9 +56,9 @@ class CXRMaskDataset(Dataset):
         mask = np.stack(masks, axis=-1).astype('float');
 
         if self.transform:
-            img = transform(img);
+            img = self.transform(img);
         if self.target_transform:
-            mask = target_transform(mask);
+            mask = self.target_transform(mask);
 
         if self.augmentation:
             sample = self.augmentation(image=img, mask=mask);
