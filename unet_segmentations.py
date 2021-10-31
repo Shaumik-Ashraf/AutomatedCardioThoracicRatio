@@ -16,6 +16,8 @@ import torch
 import segmentation_models_pytorch as smp
 from torchvision import transforms
 
+print("Starting UNET segmentation...");
+
 # helper function for data visualization
 def visualize(savename, **images):
     """PLot images in one row."""
@@ -95,13 +97,11 @@ class Dataset(BaseDataset):
 """
 
 # Lets look at data we have
-train_set = CXRMaskDataset("data/x_rays/train", "data/masks/train"); 
-validation_set = CXRMaskDataset("data/x_rays/validation", "data/masks/validation");
-test_set = CXRMaskDataset("data/x_rays/test", "data/masks/test");
+dataset = CXRMaskDataset(os.path.join("data", "split", "preprocessed", "train"), os.path.join("data", "split", "masks", "train"));
 
 image, mask = dataset[4] # get some sample
-visualize( "visualization_1.png", image=image, cars_mask=mask.squeeze());
-
+print("Saving example image");
+visualize( "visualization_1.png", image=image, mask=mask.squeeze());
 
 # Augmentations
 def get_training_augmentation():
@@ -149,7 +149,7 @@ def get_training_augmentation():
 def get_validation_augmentation():
     """Add paddings to make image shape divisible by 32"""
     test_transform = [
-        albu.PadIfNeeded(384, 480)
+        albu.PadIfNeeded(3200, 3200) # Must be padded?!?
     ]
     return albu.Compose(test_transform)
 
@@ -185,6 +185,7 @@ print(f"Using device {DEVICE}");
 
 # create segmentation model with pretrained encoder
 model = smp.Unet(encoder_name=ENCODER, encoder_weights=ENCODER_WEIGHTS, classes=len(CLASSES), activation="softmax")
+print("Initialized model");
 
 preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
 
@@ -215,7 +216,7 @@ valid_dataset = Dataset(
 
 train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=12)
 valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=4)
-
+print("Loaded train, validate datasets");
 
 loss = smp.utils.losses.DiceLoss()
 metrics = [smp.utils.metrics.IoU(threshold=0.5) ]
@@ -245,7 +246,7 @@ valid_epoch = smp.utils.train.ValidEpoch(
 
 # train model
 max_score = 0
-
+print("Training...");
 for i in range(0, EPOCHS):
 
     print('\nEpoch: {}'.format(i))

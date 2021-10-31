@@ -6,6 +6,7 @@ import cv2;
 import glob;
 import torch;
 import random;
+import numpy as np;
 from torch.utils.data import Dataset;
 #from torchvision.io import read_image;
 from torchvision.transforms import ToTensor;
