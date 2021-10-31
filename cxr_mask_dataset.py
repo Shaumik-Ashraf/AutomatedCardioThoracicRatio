@@ -9,8 +9,16 @@ import random;
 import numpy as np;
 from torch.utils.data import Dataset;
 #from torchvision.io import read_image;
-import torchvision;
-from torchvision.transforms import ToTensor;
+import torchvision
+
+
+
+def to_tensor(array):
+    # numpy to tensor
+    if( len(array.shape)==3 ):
+        return(array.transpose(2, 0, 1).astype('float'));
+    else:
+        return(array.transpose(2, 0, 1, 3).astype('float'));
 
 class CXRMaskDataset(Dataset):
     """
@@ -19,7 +27,7 @@ class CXRMaskDataset(Dataset):
         validation_set = CXRMaskDataset("data/x_rays/validation", "data/masks/validation");
         test_set = CXRMaskDataset("data/x_rays/test", "data/masks/test");
     """
-    DEFAULT_TRANSFORM = torchvision.transforms.Compose([ToTensor()]);
+    DEFAULT_TRANSFORM = None;
 
     def __init__(self, img_dir, masks_dir, transform=DEFAULT_TRANSFORM, target_transform=DEFAULT_TRANSFORM, augmentations=None):
         """
@@ -57,11 +65,16 @@ class CXRMaskDataset(Dataset):
 
         if self.transform:
             img = self.transform(img);
+        else:
+            img = to_tensor(img);
+            
         if self.target_transform:
             mask = self.target_transform(mask);
+        else:
+            mask = to_tensor(mask);
 
-        if self.augmentation:
-            sample = self.augmentation(image=img, mask=mask);
+        if self.augmentations:
+            sample = self.augmentations(image=img, mask=mask);
             img, mask = sample['image'], sample['mask']
 
         return(img, mask);
