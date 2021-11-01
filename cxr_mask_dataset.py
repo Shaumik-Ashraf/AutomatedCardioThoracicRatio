@@ -48,7 +48,7 @@ class CXRMaskDataset(Dataset):
 
     def __len__(self):
         "return length of dataset"
-        return len( img_files );
+        return len( self.img_files );
 
     def __getitem__(self, idx):
         """
@@ -67,11 +67,14 @@ class CXRMaskDataset(Dataset):
             img = self.transform(img);
         else:
             img = to_tensor(img);
-            
+
         if self.target_transform:
             mask = self.target_transform(mask);
         else:
             mask = to_tensor(mask);
+
+        # one-hot after tensor
+        # mask = torch.nn.functional.one_hot(mask, 5);
 
         if self.augmentations:
             sample = self.augmentations(image=img, mask=mask);

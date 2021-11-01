@@ -19,40 +19,38 @@ from torchvision import transforms
 print("Starting UNET segmentation...");
 
 # helper function for data visualization
-def visualize(savename, **images):
+def visualize(savename, image):
     """PLot images in one row."""
-    n = len(images)
-    plt.figure(figsize=(16, 5))
-    for i, (name, image) in enumerate(images.items()):
-        plt.subplot(1, n, i + 1)
-        plt.xticks([])
-        plt.yticks([])
-        plt.title(' '.join(name.split('_')).title())
-        plt.imshow(image)
+    image = image.permute(1, 2, 0);
+    plt.figure()
+    plt.xticks([])
+    plt.yticks([])
+    plt.title(savename)
+    plt.imshow(image)
     #plt.show()
     plt.savefig(savename)
 
 """ We use our own dataset, but this here for reference
 class Dataset(BaseDataset):
     ""CamVid Dataset. Read images, apply augmentation and preprocessing transformations.
-    
+
     Args:
         images_dir (str): path to images folder
         masks_dir (str): path to segmentation masks folder
         class_values (list): values of classes to extract from segmentation mask
-        augmentation (albumentations.Compose): data transfromation pipeline 
+        augmentation (albumentations.Compose): data transfromation pipeline
             (e.g. flip, scale, etc.)
-        preprocessing (albumentations.Compose): data preprocessing 
+        preprocessing (albumentations.Compose): data preprocessing
             (e.g. noralization, shape manipulation, etc.)
-    
+
     ""
-    
-    CLASSES = ['sky', 'building', 'pole', 'road', 'pavement', 
-               'tree', 'signsymbol', 'fence', 'car', 
+
+    CLASSES = ['sky', 'building', 'pole', 'road', 'pavement',
+               'tree', 'signsymbol', 'fence', 'car',
                'pedestrian', 'bicyclist', 'unlabelled']
-    
+
     def __init__(
-            self, 
+            self,
             images_dir,
             masks_dir,
             classes=None,
@@ -89,19 +87,24 @@ class Dataset(BaseDataset):
         if self.preprocessing:
             sample = self.preprocessing(image=image, mask=mask)
             image, mask = sample['image'], sample['mask']
-            
+
         return image, mask
-        
+
     def __len__(self):
         return len(self.ids)
 """
 
 # Lets look at data we have
-dataset = CXRMaskDataset(os.path.join("data", "split", "preprocessed", "train"), os.path.join("data", "split", "masks", "train"));
+#dataset = CXRMaskDataset(os.path.join("data", "split", "preprocessed", "train"), os.path.join("data", "split", "masks", "train"));
 
-image, mask = dataset[4] # get some sample
-print("Saving example image");
-visualize( "visualization_1.png", image=image, mask=mask.squeeze());
+#image, mask = dataset[4] # get some sample
+#print(image.shape);
+#print("===");
+#print(mask.shape);
+#print("Saving example image");
+#visualize( "visualization_image_1.png", image);
+#visualize( "visualization_mask_1.png", image);
+
 
 # Augmentations
 def get_training_augmentation():
@@ -181,6 +184,7 @@ ENCODER_WEIGHTS = 'imagenet'
 CLASSES = ['any', 'rc', 'rh', 'lh', 'lc']
 ACTIVATION = 'softmax'
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+EPOCHS = 2;
 print(f"Using device {DEVICE}");
 
 # create segmentation model with pretrained encoder
@@ -198,20 +202,21 @@ y_valid_dir = os.path.join("data", "split", "masks", "validate");
 x_test_dir = os.path.join("data", "split", "preprocessed", "test");
 y_test_dir = os.path.join("data", "split", "masks", "test");
 
-train_dataset = Dataset(
+train_dataset = CXRMaskDataset(
     x_train_dir,
     y_train_dir,
-    augmentation=get_training_augmentation(),
+    #augmentation=get_training_augmentation(),
     transform=get_preprocessing(preprocessing_fn),
     target_transform=get_preprocessing(preprocessing_fn),
 )
 
-valid_dataset = Dataset(
+valid_dataset = CXRMaskDataset(
     x_valid_dir,
     y_valid_dir,
-    augmentation=get_validation_augmentation(),
-    preprocessing=get_preprocessing(preprocessing_fn),
-    classes=CLASSES,
+    #augmentation=get_validation_augmentation(),
+    transform=get_preprocessing(preprocessing_fn),
+    target_transform=get_preprocessing(preprocessing_fn)
+    #classes=CLASSES,
 )
 
 train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=12)
@@ -273,7 +278,7 @@ best_model = torch.load('./best_model.pth')
 test_dataset = Dataset(
     x_test_dir,
     y_test_dir,
-    augmentation=get_validation_augmentation(),
+    #augmentation=get_validation_augmentation(),
     target=get_preprocessing(preprocessing_fn),
     target_transform=get_preprocessing(preprocessing_fn)
     #classes=CLASSES,
@@ -315,12 +320,9 @@ for i in range(5):
     #pr_mask = (pr_mask.squeeze().cpu().numpy().round())
 
     pr_mask = best_model.predict(image.to(DEVICE).unsqueeze(0));
-    pr_mask = pr_mask.squeeze().cpu().numpy().round();
+    # pr_mask = pr_mask.squeeze().cpu().numpy().round();
 
-    visualize(
-        "visualize_result.png",
-        image=image_vis,
-        ground_truth_mask=gt_mask,
-        predicted_mask=pr_mask
-    )
+    visualize("visualize_result_image.png", image_vis);
+    visualize("visualize_result_ground_truth.png", gt_mask);
+    visualize("visualize_result_prediction.png", pr_mask);
 
