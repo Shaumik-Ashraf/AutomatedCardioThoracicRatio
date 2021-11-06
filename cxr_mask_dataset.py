@@ -8,17 +8,20 @@ import torch;
 import random;
 import numpy as np;
 from torch.utils.data import Dataset;
-#from torchvision.io import read_image;
+
+from torchvision.transforms.functional import to_tensor;
+
 import torchvision
 
 
-
+"""
 def to_tensor(array):
     # numpy to tensor
     if( len(array.shape)==3 ):
         return(array.transpose(2, 0, 1).astype('float'));
     else:
         return(array.transpose(2, 0, 1, 3).astype('float'));
+"""
 
 class CXRMaskDataset(Dataset):
     """
@@ -56,12 +59,27 @@ class CXRMaskDataset(Dataset):
 
         returns (image : Tensor, mask : Tensor)
         """
-        img = cv2.imread(self.img_files[idx]);
-        mask = cv2.imread(self.mask_files[idx]);
+        img = cv2.imread(self.img_files[idx], cv2.IMREAD_GRAYSCALE);
+        mask = cv2.imread(self.mask_files[idx], cv2.IMREAD_GRAYSCALE);
 
         # one-hot masks:             any   rc    rh    lh   lc
         masks = [(mask == v) for v in [0, 0.25, 0.50, 0.75, 1.0]]
         mask = np.stack(masks, axis=-1).astype('float');
+
+        #print("==============");
+        #print(type(img), img.shape);
+        #print("==============");
+        #print(img);
+        #print("==============");
+        #print(type(mask), mask.shape);
+        #print("==============");
+        #print(mask);
+        #print("==============");
+        #print(self.transform);
+        #print("==============");
+        #print(self.augmentations);
+        #print("==============");
+        #print("==============");
 
         if self.transform:
             img = self.transform(img);
@@ -75,6 +93,7 @@ class CXRMaskDataset(Dataset):
 
         # one-hot after tensor
         # mask = torch.nn.functional.one_hot(mask, 5);
+
 
         if self.augmentations:
             sample = self.augmentations(image=img, mask=mask);

@@ -34,28 +34,28 @@ validate_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "validate");
 test_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "test");
 
 x_dev, x_test, y_dev, y_test = train_test_split(imgs, masks, test_size=TEST_FRACTION);
-print(imgs[0]);
-print(len(imgs));
-print(masks[0]);
-print(len(masks));
-print(x_dev[0]);
-print(len(x_dev));
-print(y_dev[0]);
-print(len(y_dev));
-print(x_test[0]);
-print(len(x_test));
-print(y_test[0]);
-print(len(y_test));
+#print(imgs[0]);
+#print(len(imgs));
+#print(masks[0]);
+#print(len(masks));
+#print(x_dev[0]);
+#print(len(x_dev));
+#print(y_dev[0]);
+#print(len(y_dev));
+#print(x_test[0]);
+print("test set x-rays:", len(x_test));
+#print(y_test[0]);
+print("test set masks:", len(y_test));
 
 x_train, x_val, y_train, y_val = train_test_split(x_dev, y_dev, test_size=(1-TEST_FRACTION)*VALIDATE_FRACTION);
-print(x_train[0]);
-print(len(x_train));
-print(y_train[0]);
-print(len(y_train));
-print(x_val[0]);
-print(len(x_val));
-print(y_val[0]);
-print(len(y_val));
+#print(x_train[0]);
+print("train set x-rays:", len(x_train));
+#print(y_train[0]);
+print("train set masks:", len(y_train));
+#print(x_val[0]);
+print("validation set x-rays:", len(x_val));
+#print(y_val[0]);
+print("validation set masks:", len(y_val));
 
 
 # generate dirs if they don't exist

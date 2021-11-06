@@ -179,8 +179,6 @@ def get_preprocessing(preprocessing_fn):
 
 
 # Load dataset & model
-ENCODER = 'resnet18'
-ENCODER_WEIGHTS = 'imagenet'
 CLASSES = ['any', 'rc', 'rh', 'lh', 'lc']
 ACTIVATION = 'softmax'
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -188,10 +186,10 @@ EPOCHS = 2;
 print(f"Using device {DEVICE}");
 
 # create segmentation model with pretrained encoder
-model = smp.Unet(encoder_name=ENCODER, encoder_weights=ENCODER_WEIGHTS, classes=len(CLASSES), activation="softmax")
+model = smp.Unet(encoder_name='resnet18', encoder_weights=None, in_channels=1, classes=5, activation="softmax")
 print("Initialized model");
 
-preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
+preprocessing_fn = smp.encoders.get_preprocessing_fn('resnet18', 'imagenet')
 
 x_train_dir = os.path.join("data", "split", "preprocessed", "train");
 y_train_dir = os.path.join("data", "split", "masks", "train");
@@ -206,17 +204,16 @@ train_dataset = CXRMaskDataset(
     x_train_dir,
     y_train_dir,
     #augmentation=get_training_augmentation(),
-    transform=get_preprocessing(preprocessing_fn),
-    target_transform=get_preprocessing(preprocessing_fn),
+    #transform=get_preprocessing(preprocessing_fn),
+    #target_transform=get_preprocessing(preprocessing_fn),
 )
 
 valid_dataset = CXRMaskDataset(
     x_valid_dir,
     y_valid_dir,
     #augmentation=get_validation_augmentation(),
-    transform=get_preprocessing(preprocessing_fn),
-    target_transform=get_preprocessing(preprocessing_fn)
-    #classes=CLASSES,
+    #transform=get_preprocessing(preprocessing_fn),
+    #target_transform=get_preprocessing(preprocessing_fn)
 )
 
 train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=12)
@@ -326,3 +323,4 @@ for i in range(5):
     visualize("visualize_result_ground_truth.png", gt_mask);
     visualize("visualize_result_prediction.png", pr_mask);
 
+vv
