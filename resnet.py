@@ -129,10 +129,8 @@ def test(loader, model):
         #total = 0;
 
         for images, y_batch in loader:
-            #truth = torch.argmax(y_batch, dim=1).squeeze();
             y_pred = model(images);
-            #pred = torch.argmax(y_pred, dim=1).squeeze();
-            mse = mean_square_error(truth, pred);
+            mse = mean_square_error(y_batch, y_pred);
             scores.append(mse);
 
     print(f"Micro-averaged Mean Squared Error {sum(scores)/len(scores)}")
