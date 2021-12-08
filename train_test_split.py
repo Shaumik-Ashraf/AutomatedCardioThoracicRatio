@@ -24,11 +24,11 @@ OUTPUT_MASKS_DIR = os.path.join("data", "new"); # creates data/new/train, data/n
 imgs = glob.glob(os.path.join(INPUT_DIR, "*"));
 masks = glob.glob(os.path.join(INPUT_MASKS_DIR, "*"));
 
-train_prefix = os.path.join(OUTPUT_DIR, "train");
-test_prefix = os.path.join(OUTPUT_DIR, "test");
+train_prefix = os.path.join(OUTPUT_DIR, "train", "imgs");
+test_prefix = os.path.join(OUTPUT_DIR, "test", "imgs");
 
-train_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "train");
-test_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "test");
+train_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "train", "masks");
+test_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "test", "masks");
 
 x_train, x_test, y_train, y_test = train_test_split(imgs, masks, test_size=TEST_FRACTION);
 #print(imgs[0]);
