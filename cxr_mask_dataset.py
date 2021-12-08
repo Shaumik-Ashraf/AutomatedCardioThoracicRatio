@@ -2,101 +2,107 @@
 # Chest XRay & Mask Dataset class for Pytorch
 
 import os;
-import cv2;
+#import cv2;
 import glob;
 import torch;
-import random;
+#import random;
 import numpy as np;
+from PIL import Image;
 from torch.utils.data import Dataset;
-
+from torchvision import transforms;
+from torch.nn.functional import one_hot;
 from torchvision.transforms.functional import to_tensor;
 
-import torchvision
+class OneHot:
+    """
+    one-hots tensors (dtype=int or long) only
+    """
+    def __init__(self, num_classes):
+        self.num_classes = num_classes;
 
+    def __call__(self, tensor):
+        #tensor = tensor.unsqueeze(0);
+        tensor = tensor.to(torch.int64);
+        #print(tensor.shape)
+        return one_hot(tensor, num_classes = self.num_classes).permute(0,3,1,2);
 
-"""
-def to_tensor(array):
-    # numpy to tensor
-    if( len(array.shape)==3 ):
-        return(array.transpose(2, 0, 1).astype('float'));
-    else:
-        return(array.transpose(2, 0, 1, 3).astype('float'));
-"""
+class MaskToTensor:
+    """
+    converts numpy array H-W-C to tensor C-H-W
+    """
+    def __init__(self):
+        pass;
+
+    def __call__(self, array):
+        print( array.shape );
+        return torch.tensor(array).permute(3,0,1,2);
 
 class CXRMaskDataset(Dataset):
     """
-    USAGE:
-        train_set = CXRMaskDataset("data/x_rays/train", "data/masks/train");
-        validation_set = CXRMaskDataset("data/x_rays/validation", "data/masks/validation");
-        test_set = CXRMaskDataset("data/x_rays/test", "data/masks/test");
+        Pytorch Dataloader class
+        Assumes:
+          - all images are 512x512
+          - each cxr image is grayscale
+          - each mask is 1 channel, with pixel values 0, 1, or 2
+          - image & mask have same name
+
+        Usage:
+            train_set = CXRMaskDataset("train/cxr", "train/masks");
+            train_loader = DataLoader(train_set, batch_size=4);
+            # loop thru train_loader for batches
     """
-    DEFAULT_TRANSFORM = None;
+    def __init__(self, cxr_folder, mask_folder):
+        self.cxr_folder = cxr_folder
+        self.mask_folder = mask_folder
 
-    def __init__(self, img_dir, masks_dir, transform=DEFAULT_TRANSFORM, target_transform=DEFAULT_TRANSFORM, augmentations=None):
-        """
-        img_dir : string - path to x-ray folder
-        labels_file : string - path to CTR_Logs.txt (img name & 4 points labelled per line)
-        transform : callback - whatever function you apply to each xray
-        target_transform : callback - function that tranforms line from CTR_Logs.txt to mask
-        augmentations: albumentations.Compose
-        """
+        self.basenames = glob.glob(os.path.join(cxr_folder,'*'));
+        assert len(self.basenames)!=0, "No images found"
 
-        self.img_files = glob.glob(os.path.join(img_dir, "*")); # catch all files in img_dir
-        random.shuffle(self.img_files);
-        self.mask_files = glob.glob(os.path.join(img_dir, "*"));
-        random.shuffle(self.mask_files);
-        self.transform = transform;
-        self.target_transform = target_transform;
-        self.augmentations = augmentations;
+        for i in range(len(self.basenames)):
+            #self.basenames[i] = self.basenames[i][:-4] #rm last 4 chars
+            self.basenames[i] = os.path.basename(self.basenames[i]);
+
+        self.cxr_transforms = transforms.Compose([
+            #transforms.PILToTensor(),
+            #NumpyToTensor(),
+            transforms.ToTensor(),
+            transforms.ConvertImageDtype(torch.float)
+        ]);
+        self.mask_transforms = transforms.Compose([
+            #transforms.PILToTesnor(),
+            #MaskToTensor(),
+            transforms.ToTensor(),
+            OneHot(3),
+            transforms.ConvertImageDtype(torch.float)
+        ]);
+
 
     def __len__(self):
-        "return length of dataset"
-        return len( self.img_files );
+        return len(self.basenames);
 
     def __getitem__(self, idx):
-        """
-        idx : int - get random data point
+        cxr = self.read_img(os.path.join(self.cxr_folder, self.basenames[idx]));
+        cxr = self.cxr_transforms(cxr);
 
-        returns (image : Tensor, mask : Tensor)
-        """
-        img = cv2.imread(self.img_files[idx], cv2.IMREAD_GRAYSCALE);
-        mask = cv2.imread(self.mask_files[idx], cv2.IMREAD_GRAYSCALE);
+        mask = self.read_img(os.path.join(self.mask_folder, self.basenames[idx]));
+        mask = self.mask_transforms(mask); # does one-hot
 
-        # one-hot masks:             any   rc    rh    lh   lc
-        masks = [(mask == v) for v in [0, 0.25, 0.50, 0.75, 1.0]]
-        mask = np.stack(masks, axis=-1).astype('float');
+        return(cxr, mask);
 
-        #print("==============");
-        #print(type(img), img.shape);
-        #print("==============");
-        #print(img);
-        #print("==============");
-        #print(type(mask), mask.shape);
-        #print("==============");
-        #print(mask);
-        #print("==============");
-        #print(self.transform);
-        #print("==============");
-        #print(self.augmentations);
-        #print("==============");
-        #print("==============");
+    def read_img(self, path):
+        return np.array(Image.open(path));
+        #return Image.open(path);
 
-        if self.transform:
-            img = self.transform(img);
-        else:
-            img = to_tensor(img);
+# test code
+if __name__=="__main__":
+    dataset = CXRMaskDataset("data/new/train_imgs", "data/new/train_masks");
 
-        if self.target_transform:
-            mask = self.target_transform(mask);
-        else:
-            mask = to_tensor(mask);
+    img1, mask1 = dataset.__getitem__(0);
 
-        # one-hot after tensor
-        # mask = torch.nn.functional.one_hot(mask, 5);
+    assert(img1 != None);
+    print("image:", type(img1), img1.shape);
+    print("======");
 
+    assert(mask1 != None);
+    print("mask:", type(mask1), mask1.shape);
 
-        if self.augmentations:
-            sample = self.augmentations(image=img, mask=mask);
-            img, mask = sample['image'], sample['mask']
-
-        return(img, mask);
