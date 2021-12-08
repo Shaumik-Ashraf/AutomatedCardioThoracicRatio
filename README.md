@@ -1,16 +1,13 @@
 # AutomatedCardioThoracicRatio
 Survey different image segmentation techniques for computing CTR
 
-## Quickstart
+**Work in progress**
 
-`mkdir data`
+## To split data:
 
-Put preprocessed xrays in data/preprocessed
+Put preprocessed chest xrays in data/new/imgs
 
-Put masks in data/masks or run `mask_gen_matplotlib.ipynb`
+Put preprocessed masks in data/new/masks
 
-`python filter_2320x2828.py`
+Run `python train_test_split.py`
 
-`python train_validate_test_split.py`
-
-## Todo: training
