@@ -2,8 +2,8 @@
 # remove all images in the below directories that are not 2320 x 2828
 
 DIRS = [
-    "data/preprocessed",
-    "data/masks"
+    "./data/preprocessed",
+    "./data/masks"
     ]
 
 import os;
