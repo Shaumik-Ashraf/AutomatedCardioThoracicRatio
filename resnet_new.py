@@ -22,7 +22,7 @@ BATCH_SIZE = 4;
 WORKERS = 4;
 LEARNING_RATE = 0.0001;
 EPOCHS = 5;
-
+NAME = "resnet_new"
 
 TRANSFORM = transforms.Compose([
     transforms.ToTensor(),
@@ -145,8 +145,8 @@ if __name__ == "__main__":
     print("Loading & Initializing Data");
     print("===");
 
-    train_cxr_folder = os.path.join('data', 'new', 'train_imgs');
-    #test_cxr_folder = os.path.join('data', 'split',  'preprocessed', 'test');
+    train_cxr_folder = os.path.join('data', 'new', 'train', 'imgs');
+    test_cxr_folder = os.path.join('data', 'new', 'test', 'imgs');
     labels_file = os.path.join('data', 'CTR_Logs.txt');
 
     train_set = CTRData(train_cxr_folder, labels_file, transform=TRANSFORM, target_transform=ToFloat());
@@ -169,13 +169,13 @@ if __name__ == "__main__":
         start = time.time();
         train(train_loader, resnet, mse_loss, adam, EPOCHS);
         print(f"Finished in {(time.time() - start) / 60} minutes");
-        torch.save(resnet.state_dict(), "resnet.pt"); # give better name?
+        torch.save(resnet.state_dict(), NAME + ".pt");
 
     print("===");
     print("Testing");
     print("===");
 
     if args.test_only:
-        resnet.load_state_dict(torch.load("resnet.pt"));
+        resnet.load_state_dict(torch.load(NAME + ".pt"));
 
     test(test_loader, resnet);
