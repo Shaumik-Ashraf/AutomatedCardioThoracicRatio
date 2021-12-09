@@ -15,11 +15,11 @@ from sklearn.model_selection import train_test_split;
 TRAIN_FRACTION = 0.8
 TEST_FRACTION = 0.2
 
-INPUT_DIR = os.path.join("data", "new", "imgs");
-INPUT_MASKS_DIR = os.path.join("data", "new", "masks");
+INPUT_DIR = os.path.join("data", "imgs");
+INPUT_MASKS_DIR = os.path.join("data", "masks");
 
-OUTPUT_DIR = os.path.join("data", "new"); # creates data/new/train, data/new/test
-OUTPUT_MASKS_DIR = os.path.join("data", "new"); # creates data/new/train, data/new/test
+OUTPUT_DIR = os.path.join("data", "processed"); # creates data/new/train, data/new/test
+OUTPUT_MASKS_DIR = os.path.join("data", "processed"); # creates data/new/train, data/new/test
 
 imgs = glob.glob(os.path.join(INPUT_DIR, "*"));
 masks = glob.glob(os.path.join(INPUT_MASKS_DIR, "*"));
