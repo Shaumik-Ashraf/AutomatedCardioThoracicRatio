@@ -5,11 +5,15 @@ def dice_loss(pred, target, smooth = 1.):
     pred = pred.contiguous()
     target = target.contiguous()    
 
-    print(f'pred shape: {pred.shape}, target shape: {target.shape}')
-    print(f'pred * target shape: {(pred * target).shape}')
+    # print(f'pred shape: {pred.shape}, target shape: {target.shape}')
+    # print(f'pred * target shape: {(pred * target).shape}')
+
+    # intersection = (pred * target).sum(dim=2).sum(dim=2)
     
-    intersection = (pred * target).sum(dim=2).sum(dim=2)
+    # loss = (1 - ((2. * intersection + smooth) / (pred.sum(dim=2).sum(dim=2) + target.sum(dim=2).sum(dim=2) + smooth)))
+
+    intersection = (pred * target).sum(dim=-1).sum(dim=-1)
     
-    loss = (1 - ((2. * intersection + smooth) / (pred.sum(dim=2).sum(dim=2) + target.sum(dim=2).sum(dim=2) + smooth)))
+    loss = (1 - ((2. * intersection + smooth) / (pred.sum(dim=-1).sum(dim=-1) + target.sum(dim=-1).sum(dim=-1) + smooth)))
     
     return loss.mean()

@@ -24,11 +24,11 @@ from loss import dice_loss
 from collections import defaultdict
 
 # BATCH_SIZE = 4
-BATCH_SIZE = 20
+BATCH_SIZE = 16
 WORKERS = 4
-LEARNING_RATE = 0.0001
-# EPOCHS = 2
-EPOCHS = 1
+LEARNING_RATE = 1e-4
+EPOCHS = 2
+# EPOCHS = 1
 
 
 TRANSFORM = transforms.Compose([
@@ -173,13 +173,23 @@ def test(loader, model):
     with torch.no_grad():
         #correct = 0;
         #total = 0;
+        metrics = defaultdict(float)
+        # epoch_samples = 0
 
         for images, y_batch in loader:
+            
             y_pred = model(images)
-            mse = mean_square_error(y_batch, y_pred)
-            scores.append(mse)
+            y_pred = torch.squeeze(y_pred)
+            y_batch = torch.squeeze(y_batch)
+            loss = calc_loss(y_pred, y_batch, metrics)
+                        
+            # y_pred = model(images)
+            # mse = mean_square_error(y_batch, y_pred)
+            # scores.append(mse)
+            scores.append(loss)
 
-    print(f"Micro-averaged Mean Squared Error {sum(scores)/len(scores)}")
+    # print(f"Micro-averaged Mean Squared Error {sum(scores)/len(scores)}")
+    print(f"average loss {sum(scores)/len(scores)}")
 
 
 if __name__ == "__main__":
