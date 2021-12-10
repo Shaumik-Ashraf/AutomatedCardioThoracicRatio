@@ -18,7 +18,7 @@ from torchvision import transforms
 #from sklearn.metrics import accuracy_score;
 from matplotlib import pyplot as plt
 from cxr_mask_dataset import CXRMaskDataset
-from res_unet_model import ResnetUNet
+from res_unet_model import ResnetUNet, UNet2 # mod'd
 # from torchsummary import summary
 from loss import dice_loss
 from collections import defaultdict
@@ -28,7 +28,7 @@ BATCH_SIZE = 16
 WORKERS = 4
 LEARNING_RATE = 1e-4
 EPOCHS = 2
-# EPOCHS = 1
+OUTPUT_PATH = os.path.join('data', 'predicted', 'masks')
 
 
 TRANSFORM = transforms.Compose([
@@ -179,8 +179,12 @@ def test(loader, model):
         for images, y_batch in loader:
             
             y_pred = model(images)
+
+            # print(f'prediction shape: {y_pred.shape}')
+
             y_pred = torch.squeeze(y_pred)
             y_batch = torch.squeeze(y_batch)
+
             loss = calc_loss(y_pred, y_batch, metrics)
                         
             # y_pred = model(images)
@@ -216,10 +220,12 @@ if __name__ == "__main__":
     test_set = CXRMaskDataset(test_cxr_folder, test_mask_folder)
 
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=WORKERS)
-    test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=WORKERS)
+    # test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=WORKERS)
+    test_loader = DataLoader(test_set, batch_size=1, shuffle=False, num_workers=WORKERS)
 
     # resnet = Resnet() modified
-    resunet = ResnetUNet(3)
+    # resunet = ResnetUNet(3)
+    resunet = UNet2(); # mod'd
     resunet.to(device)
     # summary(resunet, input_size=(1,512,512))
     # mse_loss = nn.MSELoss()
@@ -233,7 +239,14 @@ if __name__ == "__main__":
         # train(train_loader, resunet, mse_loss, adam, EPOCHS) modified
         train(train_loader, resunet, adam, EPOCHS)
         print(f"Finished in {(time.time() - start) / 60} minutes")
-        torch.save(resunet.state_dict(), "res_unet.pt"); # give better name?
+
+        model_name = 'unet2'
+        i = 0
+        while os.path.exists(f'{model_name}{i}.pt'):
+            i += 1
+        model_name = f'{model_name}{i}.pt'
+        # torch.save(resunet.state_dict(), "res_unet.pt"); # give better name?
+        torch.save(resunet.state_dict(), model_name)
 
     print("===")
     print("Testing")

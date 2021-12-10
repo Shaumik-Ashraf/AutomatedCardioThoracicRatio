@@ -81,3 +81,21 @@ class ResnetUNet(nn.Module):
         out = self.conv_last(x)
 
         return out
+
+class UNet2(nn.Module):
+    def __init__(self):
+        super(UNet2, self).__init__();
+        self.unet = torch.hub.load('milesial/Pytorch-UNet', 'unet_carvana', pretrained=False);
+
+        # grayscale input
+        self.unet.inc.double_conv[0] = nn.Conv2d(1, 64, (3,3), (1,1), (1,1));
+
+        # three class one-hot output
+        self.unet.outc = nn.Conv2d(64, 3, kernel_size=(1,1), stride=(1,1));
+
+    def forward(self, x):
+        return( self.unet(x) );
+
+if __name__ == "__main__":
+    unet = UNet2();
+    print(unet);
