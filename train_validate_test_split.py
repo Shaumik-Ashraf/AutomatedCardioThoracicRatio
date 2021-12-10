@@ -16,18 +16,18 @@ TRAIN_FRACTION = 0.7
 VALIDATE_FRACTION = 0.1
 TEST_FRACTION = 0.2
 
-INPUT_DIR = os.path.join("data", "new", "imgs");
-INPUT_MASKS_DIR = os.path.join("data", "new", "masks");
+INPUT_DIR = os.path.join("data", "imgs");
+INPUT_MASKS_DIR = os.path.join("data",  "masks");
 
-OUTPUT_DIR = os.path.join("data", "new"); # creates data/new/train, data/new/test
-OUTPUT_MASKS_DIR = os.path.join("data", "new"); # creates data/new/train, data/new/test
+OUTPUT_DIR = os.path.join("data"); # creates data/new/train, data/new/test
+OUTPUT_MASKS_DIR = os.path.join("data"); # creates data/new/train, data/new/test
 
 imgs = glob.glob(os.path.join(INPUT_DIR, "*"));
 masks = glob.glob(os.path.join(INPUT_MASKS_DIR, "*"));
 
 train_prefix = os.path.join(OUTPUT_DIR, "train1", "imgs");
 validate_prefix = os.path.join(OUTPUT_DIR, "validate1", "imgs");
-test_prefix = os.path.join(OUTPUT_DIR, "test1", "imgs");
+test_prefix = os.path.join(OUTPUT_DIR, "test1", "imgs")
 
 train_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "train1", "masks");
 validate_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "validate1", "masks");

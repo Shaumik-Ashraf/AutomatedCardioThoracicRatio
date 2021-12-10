@@ -28,7 +28,7 @@ cxr_transforms = transforms.Compose([
 # resunet = ResnetUNet(3)
 # resunet.load_state_dict(torch.load("unet20.pt"))
 resunet = UNet2()
-resunet.load_state_dict(torch.load('unet20.pt'))
+resunet.load_state_dict(torch.load('unet_val.pt'))
 resunet.to(DEVICE)
 # print('model is on cuda: {resunet.is_cuda}')
 
@@ -56,11 +56,11 @@ with torch.no_grad():
         mask_pred = resunet(cxr_img)
         mask_pred = torch.sigmoid(mask_pred)
         mask_pred = mask_pred.squeeze() # (3, 512, 512)
-        print(f'predicted mask shape before argmax: {mask_pred.shape}\n{mask_pred}')
+        # print(f'predicted mask shape before argmax: {mask_pred.shape}\n{mask_pred}')
 
         # Save the predicted mask
         mask_pred = torch.argmax(mask_pred, dim=0).float() # modified
-        print(f'\nmask_pred shape: {mask_pred.shape}\n{mask_pred}')
+        # print(f'\nmask_pred shape: {mask_pred.shape}\n{mask_pred}')
         # print(f'predicted mask min: {torch.min(mask_pred)}, max: {torch.max(mask_pred)}')
         save_image(mask_pred, os.path.join(OUTPUT_PATH, fname), normalize=True)
 
