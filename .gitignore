@@ -1,3 +1,6 @@
+# Ignore saved weights
+*.pt
+
 # Ignore data dir
 data/
 

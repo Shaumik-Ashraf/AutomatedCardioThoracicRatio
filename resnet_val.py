@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt;
 BATCH_SIZE = 4;
 WORKERS = 4;
 LEARNING_RATE = 0.000001;
-EPOCHS = 5;
+EPOCHS = 10;
 NAME = "resnet_val"
 
 TRANSFORM = transforms.Compose([
