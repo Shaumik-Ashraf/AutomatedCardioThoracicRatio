@@ -22,7 +22,7 @@ BATCH_SIZE = 4;
 WORKERS = 4;
 LEARNING_RATE = 0.0001;
 EPOCHS = 5;
-NAME = "resnet_new"
+NAME = "resnet_val"
 
 TRANSFORM = transforms.Compose([
     transforms.ToTensor(),
@@ -34,6 +34,7 @@ TRANSFORM = transforms.Compose([
 
 parser = argparse.ArgumentParser(description="Train and test RESNET18 on CXRs to predict CTR (with MSE loss and Adam optimizer).");
 parser.add_argument("--test-only", action="store_true", help="skip training, load model, and test");
+parser.add_argument("--print-model", action="store_true", help="print model, and then train/test");
 
 
 class ToFloat():
@@ -95,12 +96,14 @@ class Resnet(nn.Module):
         return self.flatten( self.resnet18(x) );
 
 
-def train(loader, model, loss_func, optim, epochs):
+def train(loader, valloader, model, loss_func, optim, epochs):
     steps = len(loader);
-    model.train();
-    running_loss = 0.0f;
+    train_loss_per_epoch = [];
+    val_loss_per_epoch = [];
 
     for epoch in range(epochs):
+        running_loss = 0.0;
+        model.train();
         for i, (x_batch, y_batch) in enumerate(loader):
 
             #print(x_batch);
@@ -118,10 +121,16 @@ def train(loader, model, loss_func, optim, epochs):
             loss.backward();
             optim.step();
 
+            running_loss += loss.item();
             if( (i+1)%10 == 0 or (i+1)==steps ):
                 print(f"Epoch {epoch+1}/{epochs}, Step {i+1}/{steps}, Loss {loss.item()}");
 
-def test(loader, model):
+        train_loss_per_epoch.append( running_loss / steps );
+        val_loss_per_epoch.append( test(valloader, model, True) )
+
+    return( train_loss_per_epoch, val_loss_per_epoch );
+
+def test(loader, model, is_validation = False):
     model.eval();
     scores = [];
 
@@ -134,7 +143,24 @@ def test(loader, model):
             mse = mean_square_error(y_batch, y_pred);
             scores.append(mse);
 
-    print(f"Micro-averaged Mean Squared Error {sum(scores)/len(scores)}")
+    if is_validation:
+        print(f"Val Micro-averaged Mean Squared Error {sum(scores)/len(scores)}")
+    else:
+        print(f"Test Micro-averaged Mean Squared Error {sum(scores)/len(scores)}")
+
+    return( sum(scores) / len(scores) );
+
+def plot_loss(train_loss, val_loss):
+    """
+    Plot loss over epoch.
+    """
+    n_epochs = range(1, len(train_loss)+1)
+
+    plt.plot(n_epochs, train_loss, 'r', label='Training Loss')
+    plt.plot(n_epochs, val_loss, 'b', label='Validation Loss')
+    plt.title('Training and Validation Loss')
+    plt.legend()
+    plt.savefig(NAME + '_loss.png', dpi=200);
 
 
 if __name__ == "__main__":
@@ -142,18 +168,19 @@ if __name__ == "__main__":
     args = parser.parse_args();
 
 
-    print("===");
-    print("Loading & Initializing Data");
-    print("===");
+    print("=== Loading & Initializing Data ===");
 
-    train_cxr_folder = os.path.join('data', 'new', 'train', 'imgs');
-    test_cxr_folder = os.path.join('data', 'new', 'test', 'imgs');
+    train_cxr_folder = os.path.join('data', 'new', 'train1', 'imgs');
+    val_cxr_folder = os.path.join('data', 'new', 'validate1', 'imgs');
+    test_cxr_folder = os.path.join('data', 'new', 'test1', 'imgs');
     labels_file = os.path.join('data', 'CTR_Logs.txt');
 
     train_set = CTRData(train_cxr_folder, labels_file, transform=TRANSFORM, target_transform=ToFloat());
+    val_set = CTRData(val_cxr_folder, labels_file, transform=TRANSFORM, target_transform=ToFloat());
     test_set = CTRData(test_cxr_folder, labels_file, transform=TRANSFORM, target_transform=ToFloat());
 
     train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=WORKERS);
+    val_loader = DataLoader(val_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=WORKERS);
     test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=True, num_workers=WORKERS);
 
 
@@ -161,20 +188,20 @@ if __name__ == "__main__":
     mse_loss = nn.MSELoss();
     adam = torch.optim.Adam(resnet.parameters(), lr = LEARNING_RATE);
 
-    print(resnet);
+    if args.print_model:
+        print(resnet);
 
     if not args.test_only:
-        print("===");
-        print("Training Model");
-        print("===");
+        print("=== Training Model ===");
         start = time.time();
-        train(train_loader, resnet, mse_loss, adam, EPOCHS);
+
+        train_loss_per_epoch, val_loss_per_epoch = train(train_loader, val_loader, resnet, mse_loss, adam, EPOCHS);
+        plot_loss(train_loss_per_epoch, val_loss_per_epoch);
+
         print(f"Finished in {(time.time() - start) / 60} minutes");
         torch.save(resnet.state_dict(), NAME + ".pt");
 
-    print("===");
-    print("Testing");
-    print("===");
+    print("=== Testing ===");
 
     if args.test_only:
         resnet.load_state_dict(torch.load(NAME + ".pt"));
