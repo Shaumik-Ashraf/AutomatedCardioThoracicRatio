@@ -181,6 +181,18 @@ def crossvalid(model=None,criterion=None,optimizer=None,dataset=None,k_fold=3):
 
     return train_loss, val_loss
 
+def plot_loss(train_loss, val_loss):
+    """
+    Plot loss over epoch.
+    """
+    n_epochs = range(1, len(train_loss)+1)
+
+    plt.plot(n_epochs, train_loss, 'r', label='training loss')
+    plt.plot(n_epochs, val_loss, 'b', label='validation loss')
+    plt.title('Training and validation loss')
+    plt.legend()
+    plt.savefig(NAME + '_loss.png', dpi=300)
+
 
 if __name__ == "__main__":
 
@@ -205,12 +217,14 @@ if __name__ == "__main__":
         print(resnet);
 
     if not args.test_only:
-        print("\n=== Training Model with Cross-Validation ===\n");
+        print("\n=== Training Model with Validation ===\n");
         start = time.time();
         #train(train_loader, resnet, mse_loss, adam, EPOCHS);
         train_score, val_score = crossvalid(resnet, mse_loss, adam, train_set);
 
         print(f"Finished in {(time.time() - start) / 60} minutes");
+
+        plot_loss(train_score, val_score);
         torch.save(resnet.state_dict(), NAME + ".pt");
 
 
