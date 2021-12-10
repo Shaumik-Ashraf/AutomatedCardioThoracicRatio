@@ -20,7 +20,7 @@ from matplotlib import pyplot as plt;
 
 BATCH_SIZE = 4;
 WORKERS = 4;
-LEARNING_RATE = 0.0001;
+LEARNING_RATE = 0.000001;
 EPOCHS = 5;
 NAME = "resnet_val"
 

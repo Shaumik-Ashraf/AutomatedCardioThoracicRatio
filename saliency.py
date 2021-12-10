@@ -5,7 +5,7 @@ from torchvision import transforms
 from PIL import Image
 
 # Initialize the model
-model = torch.load('<PATH_FILE_NAME>.pth')
+model = torch.load('resnet_val.pth')
 
 # Set the model to run on the GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -15,22 +15,23 @@ model = model.to(device)
 model.eval()
 
 # Open the image file
-image = Image.open('<FILE_NAME_ON_JPG_OR_OTHERS>')
+image = Image.open('data/new/train1/imgs/...')
 
 # Set up the transformations
 transform_ = transforms.Compose([
-		transforms.Resize(256),
-		transforms.CenterCrop(224),
-		transforms.Normalize(),
+		#transforms.Resize(256),
+		#transforms.CenterCrop(224),
+		#transforms.Normalize(),
 		transforms.ToTensor(),
 ])
 
 # Transforms the image
 image = transform_(image)
 
-# Reshape the image (because the model use 
+# Reshape the image (because the model use
 # 4-dimensional tensor (batch_size, channel, width, height))
-image = image.reshape(1, 3, 224, 224)
+#image = image.reshape(1, 3, 224, 224)
+image = image.reshape(1, 1, 512, 512)
 
 # Set the device for the image
 image = image.to(device)
