@@ -1,15 +1,20 @@
 import torch
 import torch.nn as nn
 from resnet_val import ToFloat, CTRData, Resnet;
+from vit_val import VisionTransformer
 from torchvision import models
 from torchvision import transforms
 from PIL import Image
 from matplotlib import pyplot as plt;
 
 # Initialize the model
-model = Resnet();
-model.load_state_dict(torch.load('resnet_val.pt'))
+#model = Resnet();
+#model.load_state_dict(torch.load('resnet_val.pt'))
 #print(model);
+
+model = VisionTransformer();
+model.load_state_dict(torch.load('vit_val.pt'))
+
 
 # Set the model to run on the GPU
 #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu");
@@ -19,7 +24,7 @@ model.load_state_dict(torch.load('resnet_val.pt'))
 model.eval()
 
 # Open the image file
-image = Image.open('data/probe/imgs/view1_frontal013.jpg')
+image = Image.open('data/probe/imgs/view1_frontal0115.jpg')
 
 # Set up the transformations
 transform_ = transforms.Compose([
@@ -76,4 +81,4 @@ ax[1].axis('off')
 plt.tight_layout()
 fig.suptitle('The Image and Its Saliency Map')
 #plt.show()
-plt.savefig("resnet_saliency.png")
+plt.savefig("vit_saliency_good.png")

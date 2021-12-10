@@ -88,9 +88,9 @@ class VisionTransformer(nn.Module):
                        patch_size = 32,  \
                        num_classes = 1,  \
                        dim = 1024,       \
-                       depth = 16,        \
-                       heads = 16,        \
-                       mlp_dim = 1024,    \
+                       depth = 16,       \
+                       heads = 16,       \
+                       mlp_dim = 1024,   \
                        dropout = 0.25,    \
                        emb_dropout = 0.25 );
         self.vit.to_patch_embedding[1] = nn.Linear(in_features = 1024, out_features = 1024, bias = True);
