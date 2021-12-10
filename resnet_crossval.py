@@ -98,6 +98,7 @@ class Resnet(nn.Module):
 def train(loader, model, loss_func, optim, epochs):
     steps = len(loader);
     model.train();
+    loss_per_epoch = [];
 
     for epoch in range(epochs):
         for i, (x_batch, y_batch) in enumerate(loader):
@@ -119,6 +120,10 @@ def train(loader, model, loss_func, optim, epochs):
 
             if( (i+1)%10 == 0 or (i+1) == steps ):
                 print(f"Epoch {epoch+1}/{epochs}, Step {i+1}/{steps}, Loss {loss.item()}");
+                loss_per_epoch.append(loss.item());
+
+    return(loss_per_epoch);
+
 
 # mse built in
 def test(loader, model):
@@ -135,6 +140,7 @@ def test(loader, model):
             scores.append(mse);
 
     print(f"Micro-averaged Mean Squared Error {sum(scores)/len(scores)}")
+    return( scores );
 
 # credits to Skipper
 def crossvalid(model=None,criterion=None,optimizer=None,dataset=None,k_fold=3):
@@ -181,6 +187,8 @@ def crossvalid(model=None,criterion=None,optimizer=None,dataset=None,k_fold=3):
 
     return train_loss, val_loss
 
+
+
 def plot_loss(train_loss, val_loss):
     """
     Plot loss over epoch.
@@ -224,7 +232,8 @@ if __name__ == "__main__":
 
         print(f"Finished in {(time.time() - start) / 60} minutes");
 
-        plot_loss(train_score, val_score);
+        print(train_score, val_score);
+        #plot_loss(train_score, val_score);
         torch.save(resnet.state_dict(), NAME + ".pt");
 
 

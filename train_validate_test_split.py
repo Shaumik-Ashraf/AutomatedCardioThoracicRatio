@@ -12,8 +12,8 @@ from sklearn.model_selection import train_test_split;
 
 # splits should add upto 1
 # if we do cross validation, set validate fraction to 0
-TRAIN_FRACTION = 0.8
-VALIDATE_FRACTION = 0
+TRAIN_FRACTION = 0.7
+VALIDATE_FRACTION = 0.1
 TEST_FRACTION = 0.2
 
 INPUT_DIR = os.path.join("data", "new", "imgs");
@@ -25,13 +25,13 @@ OUTPUT_MASKS_DIR = os.path.join("data", "new"); # creates data/new/train, data/n
 imgs = glob.glob(os.path.join(INPUT_DIR, "*"));
 masks = glob.glob(os.path.join(INPUT_MASKS_DIR, "*"));
 
-train_prefix = os.path.join(OUTPUT_DIR, "train");
-validate_prefix = os.path.join(OUTPUT_DIR, "validate");
-test_prefix = os.path.join(OUTPUT_DIR, "test");
+train_prefix = os.path.join(OUTPUT_DIR, "train1", "imgs");
+validate_prefix = os.path.join(OUTPUT_DIR, "validate1", "imgs");
+test_prefix = os.path.join(OUTPUT_DIR, "test1", "imgs");
 
-train_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "train");
-validate_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "validate");
-test_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "test");
+train_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "train1", "masks");
+validate_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "validate1", "masks");
+test_masks_prefix = os.path.join(OUTPUT_MASKS_DIR, "test1", "masks");
 
 x_dev, x_test, y_dev, y_test = train_test_split(imgs, masks, test_size=TEST_FRACTION);
 #print(imgs[0]);
